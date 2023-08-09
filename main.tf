@@ -1,11 +1,11 @@
 # プロバイダーの選択
 terraform {
-    required_providers {
-        google = {
-            source  = "hashicorp/google"
-            version = ">= 4.34.0"
-        }
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 4.34.0"
     }
+  }
 }
 
 # ローカル変数
@@ -13,13 +13,6 @@ locals {
   project = "" # プロジェクト名
   region     = "asia-northeast1" # リージョン
   user_name = "" # ここに名前でも入れて個別に識別できるようにする
-}
-
-# ファイルの圧縮
-data "archive_file" "functions_sample_code_archive" {
-    type        = "zip"
-    source_dir  = "./src"
-    output_path = "./test_code.zip"
 }
 
 # サービスアカウント作成
@@ -47,7 +40,7 @@ resource "google_storage_bucket" "bucket" {
 resource "google_storage_bucket_object" "sample_code" {
   name   = "function-source.zip"
   bucket = google_storage_bucket.bucket.name
-  source = data.archive_file.functions_sample_code_archive.output_path  # Add path to the zipped function source code
+  source = "./sample_code.zip"  # Add path to the zipped function source code
 }
 
 # cloud functions
