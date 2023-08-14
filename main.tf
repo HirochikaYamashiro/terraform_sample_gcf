@@ -1,18 +1,14 @@
 # プロバイダーの選択
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = ">= 4.34.0"
-    }
-  }
+provider "google" {
+  project   = local.project
+  region    = local.region
 }
 
 # ローカル変数
 locals {
-  project = "" # プロジェクト名
-  region     = "asia-northeast1" # リージョン
-  user_name = "" # ここに名前でも入れて個別に識別できるようにする
+  project     = "" # プロジェクト名
+  region      = "asia-northeast1" # リージョン
+  user_name   = "" # ここに名前でも入れて個別に識別できるようにする
 }
 
 # サービスアカウント作成
@@ -22,6 +18,7 @@ resource "google_service_account" "cloud_functions_test" {
   display_name = "cloud-functions-test"
   project      = local.project
 }
+
 # 権限付与
 resource "google_project_iam_member" "cloud_functions_test" {
   project = local.project
@@ -29,7 +26,7 @@ resource "google_project_iam_member" "cloud_functions_test" {
   member  = "serviceAccount:${google_service_account.cloud_functions_test.email}"
 }
 
-# cloud storage
+# cloud storageのbucketを作成
 resource "google_storage_bucket" "bucket" {
   name     = "test-${local.project}-${local.user_name}-gcf-storage" # Every bucket name must be globally unique
   location = local.region
@@ -43,7 +40,7 @@ resource "google_storage_bucket_object" "sample_code" {
   source = "./sample_code.zip"  # Add path to the zipped function source code
 }
 
-# cloud functions
+# cloud functionsの構築
 resource "google_cloudfunctions2_function" "sample" {
   name = "sample-function-${local.user_name}"
   location = local.region
