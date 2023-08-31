@@ -1,7 +1,25 @@
 # プロバイダーの選択
 provider "google" {
-  project   = local.project
-  region    = local.region
+  project = local.project
+  region  = local.region
+  access_token    = data.google_service_account_access_token.default.access_token
+  request_timeout = "60s"
+}
+
+# service accountの権限を借用して実行するようにする
+provider "google" {
+  alias = "impersonation"
+  scopes = [
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/userinfo.email",
+  ]
+}
+
+data "google_service_account_access_token" "default" {
+  provider               = google.impersonation
+  target_service_account = local.terraform_service_account
+  scopes                 = ["userinfo-email", "cloud-platform"]
+  lifetime               = "1200s"
 }
 
 # ローカル変数
@@ -9,6 +27,7 @@ locals {
   project     = "" # プロジェクト名
   region      = "asia-northeast1" # リージョン
   user_name   = "" # ここに名前でも入れて個別に識別できるようにする
+  terraform_service_account   = "terraform@${local.project}.iam.gserviceaccount.com"
 }
 
 # サービスアカウント作成
